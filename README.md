@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adopte un jardin
 
-## Getting Started
+Site pour proposer son jardin à la location ou à la cueillette de fruits et légumes.
+Démo front-only : toutes les données sont stockées dans le `localStorage` du navigateur,
+la connexion et le paiement sont simulés.
 
-First, run the development server:
+## Stack
+
+Next.js (App Router, export statique / SSG) · React · TypeScript · Tailwind CSS · ESLint · Prettier
+
+## Fonctionnalités
+
+- Recherche par texte, commune, rayon (km), prix max, équipements (outils, eau, toilettes), tri
+- Carte à bulles par commune (clic pour filtrer)
+- Fiche parcelle : surface, eau, compteur, outils, toilettes, plages d’accès, personnes max,
+  équipements, photos multiples, adresse et téléphone visibles après réservation
+- Deux modes : **cueillette** (au panier / au kg) et **location** de parcelle (à l’année)
+- Réservation avec frais de service, paiement simulé, code de validation saisi par le propriétaire,
+  versements en mars / juin / octobre
+- Tableaux de bord propriétaire (`/mes-parcelles`) et jardinier (`/mes-reservations`)
+- Favoris, avis et notes, messagerie
+- Échanges de plantes (plants, semis, graines, boutures)
+- Profil avec commune par défaut, guide, thème clair / sombre
+- Connexion fictive (comptes démo : `marie@demo.fr`, `jean@demo.fr`, `lea@demo.fr`, `samir@demo.fr`,
+  n’importe quel mot de passe)
+
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
+npm run lint
+npm run typecheck
+npm run format
+npm run build        # génère le site statique dans ./out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Déploiement GitHub Pages
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`next.config.ts` exporte un site statique et applique `basePath: '/jardin'` en production
+(nom du dépôt). Publier le dossier `out/` avec une GitHub Action
+(`actions/upload-pages-artifact` + `actions/deploy-pages`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/            routes (pages fines)
+  components/     un dossier par composant (index, composant, helpers, constants, types)
+    ui/           primitives partagées (Button, Chip, Field, Badge, Stars, EmptyState)
+  constants/      clés, routes, communes, données de démo
+  helpers/        stockage, formats, géo, tarifs, filtres
+  hooks/          useApp (contexte), useQueryId
+  types/          modèle de domaine
+maquettes/        3 maquettes HTML de départ
+```

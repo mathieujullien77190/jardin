@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adopte un jardin — V3 Carte</title>
+<style>
+:root{--bg:#10201a;--panel:#162a22;--line:#26443a;--mint:#7be0a4;--lime:#d4f56b;--ink:#eaf5ee;--mut:#8fa99b}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-weight:800;color:var(--lime);font-size:18px;letter-spacing:-.3px}
+.seg{display:flex;background:var(--panel);border-radius:99px;padding:3px;border:1px solid var(--line)}
+.seg span{padding:7px 16px;border-radius:99px;font-size:13px;color:var(--mut)}
+.seg .on{background:var(--lime);color:#10201a;font-weight:700}
+.q{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:9px 16px;color:var(--mut);font-size:14px}
+.btn{background:var(--mint);color:#10201a;padding:9px 16px;border-radius:99px;font-weight:700;font-size:13px;text-decoration:none}
+.app{flex:1;display:grid;grid-template-columns:400px 1fr;min-height:0}
+aside{overflow:auto;border-right:1px solid var(--line);padding:16px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.f{font-size:12px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;color:var(--mut)}
+.f.on{border-color:var(--lime);color:var(--lime)}
+.item{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.item.sel{border-color:var(--lime)}
+.thumb{width:76px;height:76px;border-radius:10px;display:grid;place-items:center;font-size:34px;flex:none}
+.item h3{font-size:15px}
+.item p{font-size:12px;color:var(--mut);margin:3px 0 6px}
+.meta{display:flex;gap:10px;font-size:12px;align-items:center}
+.meta b{color:var(--lime)}
+.pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:#26443a}
+.map{position:relative;background:
+ radial-gradient(circle at 20% 30%,#1c3a2e 0 90px,transparent 91px),
+ radial-gradient(circle at 70% 65%,#1c3a2e 0 140px,transparent 141px),
+ linear-gradient(#0e1c16,#122419);
+ overflow:hidden}
+.map::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;opacity:.35}
+.road{position:absolute;height:6px;background:#1f3a30;border-radius:3px}
+.pin{position:absolute;background:var(--panel);border:2px solid var(--lime);color:var(--ink);font-weight:700;font-size:12px;padding:5px 10px;border-radius:99px;box-shadow:0 4px 14px #0008;white-space:nowrap}
+.pin.l{border-color:var(--mint)}
+.pin.sel{background:var(--lime);color:#10201a;transform:scale(1.15)}
+.detail{position:absolute;left:20px;bottom:20px;width:min(340px,calc(100% - 40px));background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}
+.detail h3{margin-bottom:4px}
+.detail p{font-size:13px;color:var(--mut);margin-bottom:12px}
+.detail .row{display:flex;gap:8px}
+.detail .btn{flex:1;text-align:center}
+.detail .ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+@media(max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:260px 1fr}.map{order:-1}aside{border-right:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌿 adopte·un·jardin</div>
+  <div class="seg"><span class="on">Cueillir</span><span>Louer</span></div>
+  <div class="q">🔍 Paris 11e · rayon 10 km</div>
+  <a class="btn" href="#">+ Mon jardin</a>
+</header>
+
+<div class="app">
+  <aside>
+    <div class="filters"><span class="f on">Ouvert ce week-end</span><span class="f">Fruits</span><span class="f">Légumes</span><span class="f">Bio</span><span class="f">&lt; 10 €</span></div>
+    <div class="item sel"><div class="thumb" style="background:#4b2a33">🍓</div><div><h3>Verger de Marie</h3><p>Montreuil · 2,1 km</p><div class="meta"><span class="pill">CUEILLIR</span><b>5 €/panier</b><span>★ 4,9</span></div></div></div>
+    <div class="item"><div class="thumb" style="background:#2f4a22">🥒</div><div><h3>Potager de Samir</h3><p>Bagnolet · 3,4 km</p><div class="meta"><span class="pill">CUEILLIR</span><b>3 €/kg</b><span>★ 4,7</span></div></div></div>
+    <div class="item"><div class="thumb" style="background:#4a3a1c">🍎</div><div><h3>Clos des pommiers</h3><p>Vincennes · 4,0 km</p><div class="meta"><span class="pill">CUEILLIR</span><b>2 €/kg</b><span>★ 5,0</span></div></div></div>
+    <div class="item"><div class="thumb" style="background:#1d3b4a">🍅</div><div><h3>Serre à tomates</h3><p>Pantin · 5,2 km</p><div class="meta"><span class="pill">CUEILLIR</span><b>4 €/kg</b><span>★ 4,6</span></div></div></div>
+    <div class="item"><div class="thumb" style="background:#3a2f4a">🫐</div><div><h3>Fruits rouges de Nadia</h3><p>Les Lilas · 6,0 km</p><div class="meta"><span class="pill">CUEILLIR</span><b>8 €/barquette</b><span>★ 4,8</span></div></div></div>
+  </aside>
+
+  <section class="map">
+    <div class="road" style="top:35%;left:0;width:100%;transform:rotate(-8deg)"></div>
+    <div class="road" style="top:0;left:55%;width:6px;height:100%"></div>
+    <div class="pin sel" style="top:30%;left:38%">🍓 5 €</div>
+    <div class="pin" style="top:52%;left:62%">🥒 3 €</div>
+    <div class="pin" style="top:20%;left:72%">🍎 2 €</div>
+    <div class="pin" style="top:68%;left:30%">🍅 4 €</div>
+    <div class="pin l" style="top:44%;left:20%">Louer · 25 €</div>
+    <div class="pin l" style="top:78%;left:70%">Louer · 40 €</div>
+    <div class="detail">
+      <h3>Verger de Marie 🍓</h3>
+      <p>450 m² · fraises, cerises, groseilles · samedi 9h–13h · 3 places restantes</p>
+      <div class="row"><a class="btn" href="#">Réserver un créneau</a><a class="btn ghost" href="#">Détails</a></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

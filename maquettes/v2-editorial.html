@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adopte un jardin — V2 Éditorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f6efe0;--earth:#5b3a29;--leaf:#4a6b3a;--tom:#d9482b;--sun:#f0b43c;--ink:#2a2118}
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55}
+h1,h2,h3,.logo{font-family:Fraunces,serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 6vw}
+.logo{font-size:24px;font-weight:700;color:var(--earth)}
+nav a{margin-left:24px;color:var(--earth);text-decoration:none;font-weight:600;font-size:14px}
+.hero{padding:40px 6vw 70px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(38px,6vw,72px);line-height:1.02;color:var(--earth)}
+.hero h1 em{color:var(--tom)}
+.hero p{margin:20px 0 28px;font-size:18px;max-width:480px}
+.btn{display:inline-block;padding:14px 26px;border-radius:12px;font-weight:600;text-decoration:none;margin-right:10px}
+.b1{background:var(--leaf);color:#fff}.b2{background:var(--sun);color:var(--ink)}
+.art{aspect-ratio:1;border-radius:50% 50% 46% 54% / 55% 45% 55% 45%;background:radial-gradient(circle at 30% 30%,#b9d68a,var(--leaf));display:grid;place-items:center;font-size:clamp(80px,14vw,170px);position:relative}
+.art span{position:absolute;font-size:56px}
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.path{padding:60px 6vw;min-height:340px}
+.path.a{background:var(--leaf);color:#fff}
+.path.b{background:var(--tom);color:#fff}
+.path h2{font-size:36px;margin:8px 0 12px}
+.path ul{margin:16px 0 24px;padding-left:18px}
+.path .btn{background:#fff;color:var(--ink)}
+.season{padding:70px 6vw;text-align:center}
+.season h2{font-size:38px;color:var(--earth);margin-bottom:8px}
+.cal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px}
+.cal div{background:#fff;border-radius:18px;padding:18px;border:2px dashed #d8c9a5}
+.cal b{display:block;font-family:Fraunces,serif;font-size:18px;color:var(--earth)}
+.cal span{font-size:28px;display:block;margin-top:6px}
+.stories{padding:20px 6vw 70px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.story{background:#fff;padding:26px;border-radius:20px;transform:rotate(-1deg)}
+.story:nth-child(2){transform:rotate(1.2deg)}
+.story q{font-family:Fraunces,serif;font-size:19px;display:block;margin-bottom:14px}
+.story small{color:#8a7a62}
+.news{background:var(--earth);color:var(--cream);padding:50px 6vw;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.news input{padding:13px;border-radius:10px;border:0;min-width:240px}
+footer{text-align:center;padding:24px;font-size:13px;color:#8a7a62}
+@media(max-width:760px){.hero,.paths{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="logo">Adopte un jardin</div><nav><a href="#">Les jardins</a><a href="#">Saisons</a><a href="#">Histoires</a><a href="#">Se connecter</a></nav></header>
+
+<section class="hero">
+  <div>
+    <h1>Un jardin pour <em>chaque</em> main verte.</h1>
+    <p>Vous avez un coin de terre qui dort ? Vous rêvez de tomates qui ont du goût ? Ici, on se prête la terre et on se partage la récolte.</p>
+    <a class="btn b1" href="#">Je cherche un jardin</a><a class="btn b2" href="#">Je propose le mien</a>
+  </div>
+  <div class="art">🌻<span style="top:6%;left:12%">🍅</span><span style="bottom:10%;right:6%">🥕</span><span style="top:18%;right:2%">🍓</span></div>
+</section>
+
+<section class="paths">
+  <div class="path a"><small>POUR LES JARDINIERS</small><h2>Louer un jardin</h2><p>Un bout de potager pour la saison, l'année, ou juste un essai.</p><ul><li>Parcelles de 10 à 500 m²</li><li>Outils et eau selon l'annonce</li><li>Contrat simple et assuré</li></ul><a class="btn" href="#">Voir les parcelles</a></div>
+  <div class="path b"><small>POUR LES GOURMANDS</small><h2>Venir cueillir</h2><p>Fraises, pommes, courgettes : vous cueillez, vous payez au panier.</p><ul><li>Créneaux de cueillette réservables</li><li>Prix libres ou au poids</li><li>Zéro intermédiaire, zéro emballage</li></ul><a class="btn" href="#">Voir les cueillettes</a></div>
+</section>
+
+<section class="season">
+  <h2>Qu'est-ce qui pousse en ce moment ?</h2>
+  <p>Calendrier des récoltes, de mars à novembre.</p>
+  <div class="cal">
+    <div><b>Printemps</b><span>🥬 🥕 🌱</span></div>
+    <div><b>Début d'été</b><span>🍓 🍒</span></div>
+    <div><b>Plein été</b><span>🍅 🥒 🫐</span></div>
+    <div><b>Automne</b><span>🍎 🎃 🍐</span></div>
+  </div>
+</section>
+
+<section class="stories">
+  <div class="story"><q>« J'ai loué 40 m² chez Hélène. Je n'avais pas de balcon, j'ai maintenant des haricots. »</q><small>Karim, Lille · locataire</small></div>
+  <div class="story"><q>« Mon verger partait aux guêpes. Aujourd'hui des familles viennent chaque dimanche. »</q><small>Gérard, Angers · propriétaire</small></div>
+  <div class="story"><q>« Mes enfants savent d'où vient une pomme. Ça n'a pas de prix. »</q><small>Léa, Rennes · cueilleuse</small></div>
+</section>
+
+<section class="news"><div><h2 style="font-family:Fraunces,serif">La lettre du potager</h2><p>Un jardin, une recette, une saison. Une fois par mois.</p></div><div><input placeholder="votre@email.fr"> <a class="btn b2" href="#">Je m'abonne</a></div></section>
+<footer>© Adopte un jardin — maquette V2 · Éditorial</footer>
+</body>
+</html>
