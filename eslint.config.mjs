@@ -19,7 +19,7 @@ const eslintConfig = defineConfig([
     },
   },
   globalIgnores([
-    'public/maplibre/**',
+    'public/maplibre/**', '**/storybook-static/**',
     '.next/**',
     'out/**',
     'build/**',

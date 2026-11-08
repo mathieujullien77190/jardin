@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: { unoptimized: true },
   env: { NEXT_PUBLIC_BASE_PATH: basePath },
+  transpilePackages: ['@adopte-un-jardin/ui'],
   turbopack: {
     rules: {
       '*.css': {

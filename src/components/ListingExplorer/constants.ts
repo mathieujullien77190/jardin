@@ -13,8 +13,17 @@ export const DEFAULT_FILTERS: ListingFilters = {
   sort: 'recent',
 };
 
-export const MODE_CHIPS = [
-  { id: 'all', label: 'Tous' },
-  { id: 'cueillette', label: '🍓 Cueillette' },
-  { id: 'location', label: '🥕 Location' },
+export const PAGE_SIZE = 12;
+
+export const ALL_MODES_INFO = {
+  emoji: '🌿',
+  title: 'Tous les jardins',
+  description: 'Cueillette et location de parcelle.',
+} as const;
+
+// Équipements : un critère à part du type d'annonce (cueillette / location).
+export const EQUIPMENT_FILTERS = [
+  { key: 'tools', label: '🧰 Outils fournis' },
+  { key: 'water', label: '💧 Accès à l’eau' },
+  { key: 'toilets', label: '🚻 Toilettes' },
 ] as const;

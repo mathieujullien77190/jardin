@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { loadMapLibre } from '@/helpers/maplibre';
+import { collapseAttribution, loadMapLibre } from '@/helpers/maplibre';
 import { ORTHO_STYLE, PARCEL_FIT_PADDING, PARCEL_MAP_ZOOM } from './constants';
 import { boundsOf } from './helpers';
 import type { ParcelMapProps } from './types';
@@ -28,7 +28,9 @@ export const ParcelMap = ({ parcel }: ParcelMapProps) => {
         maxZoom: PARCEL_MAP_ZOOM + 1,
         animate: false,
       });
+      map.once('idle', () => collapseAttribution(map));
       map.on('load', () => {
+        collapseAttribution(map);
         map.addSource('parcel', {
           type: 'geojson',
           data: {

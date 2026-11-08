@@ -1,20 +1,22 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-  CITIES,
   INPUT_CLASS,
-  MODE_LABELS,
+  MODE_INFO,
   PRODUCE_OPTIONS,
   UNIT_BY_MODE,
   WATER_LABELS,
   WEEK_DAYS,
   listingRoute,
 } from '@/constants';
+import type { AddressResult } from '@/helpers/address';
+import { fetchParcelAt } from '@/helpers/cadastre';
 import { useApp } from '@/hooks/useApp';
 import { useQueryId } from '@/hooks/useQueryId';
 import type { ListingMode, WaterAccess } from '@/types';
+import AddressPicker from '../AddressPicker';
 import PhotoPicker from '../PhotoPicker';
 import RequireAuth from '../RequireAuth';
 import Button from '../ui/Button';
@@ -34,13 +36,44 @@ import type { DraftErrors, ListingDraft, ListingFormProps } from './types';
 
 type FormProps = { initial: ListingDraft; listingId?: string };
 
+type ParcelState = 'idle' | 'loading' | 'found' | 'none';
+
 const Form = ({ initial, listingId }: FormProps) => {
   const { saveListing } = useApp();
   const router = useRouter();
   const [draft, setDraft] = useState<ListingDraft>(initial);
   const [errors, setErrors] = useState<DraftErrors>({});
+  const [parcelState, setParcelState] = useState<ParcelState>(
+    initial.parcel ? 'found' : 'idle',
+  );
+  const requestId = useRef(0);
   const patch = (change: Partial<ListingDraft>): void =>
     setDraft((current) => ({ ...current, ...change }));
+
+  // Typing again invalidates the previous pick: an address must be chosen from the list.
+  const changeAddressText = (text: string): void => {
+    if (text === draft.address) return;
+    requestId.current += 1;
+    setParcelState('idle');
+    patch({ address: text, city: '', location: undefined, parcel: undefined });
+  };
+
+  const selectAddress = (result: AddressResult): void => {
+    requestId.current += 1;
+    const current = requestId.current;
+    patch({
+      address: result.label,
+      city: result.city,
+      location: [result.lng, result.lat],
+      parcel: undefined,
+    });
+    setParcelState('loading');
+    void fetchParcelAt(result.lng, result.lat).then((parcel) => {
+      if (requestId.current !== current) return;
+      patch({ parcel: parcel ?? undefined });
+      setParcelState(parcel ? 'found' : 'none');
+    });
+  };
 
   const changeMode = (mode: ListingMode): void =>
     patch({
@@ -70,15 +103,34 @@ const Form = ({ initial, listingId }: FormProps) => {
       </h1>
 
       <section className="border-line bg-surface space-y-4 rounded-2xl border p-5">
-        <div className="flex gap-2">
-          {(Object.keys(MODE_LABELS) as ListingMode[]).map((mode) => (
-            <Chip
-              key={mode}
-              label={mode === 'cueillette' ? '🍓 Cueillette' : '🥕 Location de parcelle'}
-              active={draft.mode === mode}
-              onClick={() => changeMode(mode)}
-            />
-          ))}
+        <div>
+          <p className="mb-2 text-sm font-semibold">Type d’annonce</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(Object.keys(MODE_INFO) as ListingMode[]).map((mode) => {
+              const info = MODE_INFO[mode];
+              const active = draft.mode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => changeMode(mode)}
+                  className={`rounded-2xl border-2 p-4 text-left transition ${
+                    active
+                      ? 'border-brand bg-brand-soft'
+                      : 'border-line bg-surface hover:border-brand'
+                  }`}
+                >
+                  <span className="font-bold">
+                    {info.emoji} {info.title}
+                  </span>
+                  <span className="text-mute mt-1 block text-sm leading-snug">
+                    {info.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <Field label="Titre" error={errors.title}>
           <input
@@ -95,19 +147,35 @@ const Form = ({ initial, listingId }: FormProps) => {
             onChange={(e) => patch({ description: e.target.value })}
           />
         </Field>
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Adresse du jardin</p>
+          <AddressPicker
+            value={draft.address}
+            onTextChange={changeAddressText}
+            onSelect={selectAddress}
+          />
+          {errors.address && <p className="text-danger text-xs">{errors.address}</p>}
+          {parcelState === 'loading' && (
+            <p className="text-mute text-xs">Recherche de la parcelle cadastrale…</p>
+          )}
+          {parcelState === 'found' && draft.parcel && (
+            <p className="text-brand-dark text-xs">
+              ✅ Parcelle cadastrale trouvée : section {draft.parcel.ref} ·{' '}
+              {draft.parcel.area} m² ({draft.parcel.commune})
+            </p>
+          )}
+          {parcelState === 'none' && (
+            <p className="text-mute text-xs">
+              Aucune parcelle trouvée à cette adresse : le jardin sera placé sur
+              l’adresse.
+            </p>
+          )}
+          <p className="text-mute text-xs">
+            L’adresse exacte reste privée : elle n’est visible qu’après une réservation
+            payée.
+          </p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Commune" error={errors.city}>
-            <select
-              className={INPUT_CLASS}
-              value={draft.city}
-              onChange={(e) => patch({ city: e.target.value })}
-            >
-              <option value="">Choisir…</option>
-              {CITIES.map((city) => (
-                <option key={city.name}>{city.name}</option>
-              ))}
-            </select>
-          </Field>
           <Field label="Surface cultivable (m²)" error={errors.area}>
             <input
               type="number"
@@ -288,13 +356,6 @@ const Form = ({ initial, listingId }: FormProps) => {
           Visibles uniquement par vous et par le jardinier ayant payé.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Adresse exacte" error={errors.address}>
-            <input
-              className={INPUT_CLASS}
-              value={draft.address}
-              onChange={(e) => patch({ address: e.target.value })}
-            />
-          </Field>
           <Field label="Téléphone">
             <input
               className={INPUT_CLASS}
@@ -333,10 +394,7 @@ const EditLoader = () => {
   );
 };
 
-const NewLoader = () => {
-  const { user } = useApp();
-  return <Form initial={emptyDraft(user?.city ?? '')} />;
-};
+const NewLoader = () => <Form initial={emptyDraft()} />;
 
 export const ListingForm = ({ editing = false }: ListingFormProps) => (
   <RequireAuth>{editing ? <EditLoader /> : <NewLoader />}</RequireAuth>

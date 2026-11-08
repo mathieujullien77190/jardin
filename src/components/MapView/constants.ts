@@ -12,18 +12,21 @@ export const FIT_PADDING = 24;
 export const CITY_ZOOM = 11;
 export const PARCEL_ZOOM = 17;
 export const CADASTRE_MIN_ZOOM = 15.5;
+export const POINTS_MAX_ZOOM = 16;
 
+export const CLUSTER_RADIUS = 55;
+export const CLUSTER_MAX_ZOOM = 12;
+
+export const SOURCE_POINTS = 'garden-points';
 export const SOURCE_PARCELS = 'garden-parcels';
 export const SOURCE_CADASTRE = 'cadastre';
+export const LAYER_CLUSTERS = 'garden-clusters';
+export const LAYER_CLUSTER_COUNT = 'garden-cluster-count';
+export const LAYER_POINT = 'garden-point';
 export const LAYER_PARCELS_FILL = 'garden-parcels-fill';
 export const LAYER_PARCELS_LINE = 'garden-parcels-line';
 export const LAYER_CADASTRE_LINES = 'cadastre-lines';
 
 export const PARCEL_COLORS = { cueillette: '#f2994a', location: '#2f7d4f' } as const;
-
-export const BUBBLE_BASE_CLASS =
-  'grid cursor-pointer place-items-center rounded-full border-2 text-sm font-bold shadow-lg';
-export const BUBBLE_IDLE_CLASS = 'border-brand bg-white text-brand-dark';
-export const BUBBLE_SELECTED_CLASS = 'border-ink bg-accent text-ink';
-export const BUBBLE_LABEL_CLASS =
-  'pointer-events-none absolute top-full mt-0.5 rounded bg-white/80 px-1 text-[10px] font-semibold whitespace-nowrap text-ink';
+export const CLUSTER_COLORS = { small: '#5fbf86', medium: '#2f7d4f', large: '#1f5636' };
+export const CLUSTER_FONT = ['Noto Sans Bold'];

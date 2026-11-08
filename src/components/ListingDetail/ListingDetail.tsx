@@ -17,6 +17,7 @@ import ParcelMap from '../ParcelMap';
 import ReviewSection from '../ReviewSection';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import HeartIcon from '../ui/HeartIcon';
 import EmptyState from '../ui/EmptyState';
 import { canSeePrivateInfo } from './helpers';
 
@@ -193,7 +194,7 @@ export const ListingDetail = () => {
               onClick={() => app.toggleFavorite(listing.id)}
               className="text-2xl"
             >
-              {favorite ? '❤️' : '🤍'}
+              <HeartIcon filled={favorite} className="h-7 w-7" />
             </button>
           </div>
           {isOwner ? (

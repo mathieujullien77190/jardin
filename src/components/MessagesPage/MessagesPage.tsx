@@ -38,13 +38,13 @@ const Content = () => {
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Messages</h1>
       <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-        <ul className="space-y-2">
+        <ul className="min-w-0 space-y-2">
           {threads.map((thread) => (
-            <li key={thread.key}>
+            <li key={thread.key} className="min-w-0">
               <button
                 type="button"
                 onClick={() => setSelected(thread.key)}
-                className={`w-full rounded-xl border p-3 text-left text-sm ${
+                className={`w-full overflow-hidden rounded-xl border p-3 text-left text-sm ${
                   thread.key === current?.key
                     ? 'border-brand bg-brand-soft'
                     : 'border-line bg-surface'
@@ -61,7 +61,7 @@ const Content = () => {
         </ul>
 
         {current && (
-          <div className="border-line bg-surface flex min-h-80 flex-col rounded-2xl border p-4">
+          <div className="border-line bg-surface flex min-h-80 min-w-0 flex-col rounded-2xl border p-4">
             <p className="border-line mb-3 border-b pb-2 text-sm font-semibold">
               {nameOf(current.otherId)} · {titleOf(current.listingId)}
             </p>

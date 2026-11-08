@@ -1,13 +1,13 @@
 'use client';
 
-import { useApp } from '@/hooks/useApp';
+import { useToastStore } from '@/store/toasts';
 
 export const Toasts = () => {
-  const { toasts } = useApp();
+  const toasts = useToastStore((state) => state.toasts);
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col gap-2"
+      className="pointer-events-none fixed right-4 bottom-20 z-50 flex flex-col gap-2 md:bottom-4"
     >
       {toasts.map((toast) => (
         <div

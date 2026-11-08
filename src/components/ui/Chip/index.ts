@@ -1,1 +1,1 @@
-export { default } from './Chip';
+export { Chip as default } from '@adopte-un-jardin/ui';

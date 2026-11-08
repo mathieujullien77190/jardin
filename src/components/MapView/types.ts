@@ -1,20 +1,18 @@
 import type { ListingMode } from '@/types';
 
-export type MapParcel = {
+export type MapGarden = {
   id: string;
   title: string;
   mode: ListingMode;
   center: [number, number];
-  ring: [number, number][];
+  ring?: [number, number][];
 };
 
 export type MapFocus = { id: string; seq: number };
 
 export type MapViewProps = {
-  counts: Record<string, number>;
+  gardens: MapGarden[];
   selectedCity: string;
-  parcels: MapParcel[];
   focus: MapFocus | null;
-  onSelectCity: (city: string) => void;
-  onOpenParcel: (listingId: string) => void;
+  onOpenGarden: (listingId: string) => void;
 };

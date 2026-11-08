@@ -6,7 +6,6 @@ export type BookingStatus = 'payee' | 'validee' | 'annulee';
 export type PayoutPeriod = 'mars' | 'juin' | 'octobre';
 export type PlantKind = 'plant' | 'semis' | 'graines' | 'bouture';
 export type PlantStatus = 'disponible' | 'donne';
-export type ThemeName = 'light' | 'dark';
 
 export type City = { name: string; lat: number; lng: number };
 
@@ -45,6 +44,8 @@ export type Listing = {
   photos: string[];
   address: string;
   phone: string;
+  // Exact point of the address picked with the geocoder, [lng, lat].
+  location?: [number, number];
   parcel?: Parcel;
   status: ListingStatus;
   emoji: string;
@@ -124,6 +125,33 @@ export type Db = {
   reviews: Review[];
   plants: Plant[];
   favorites: Record<string, string[]>;
+  // Version of the demo seed already merged into this database.
+  seedVersion?: number;
+  // Accounts already filled with fake gardens, favorites, bookings and messages.
+  seededUsers?: string[];
+};
+
+export type GuideStep = { title: string; text: string };
+
+export type GuideSection = {
+  id: string;
+  title: string;
+  paragraphs?: string[];
+  steps?: GuideStep[];
+  bullets?: string[];
+  tip?: string;
+  note?: string;
+};
+
+export type GuideArticle = {
+  slug: string;
+  emoji: string;
+  title: string;
+  summary: string;
+  readTime: string;
+  ctaLabel: string;
+  ctaHref: string;
+  sections: GuideSection[];
 };
 
 export type ToastItem = { id: string; message: string };
@@ -135,8 +163,6 @@ export type AppContextValue = {
   db: Db;
   user: User | null;
   toasts: ToastItem[];
-  theme: ThemeName;
-  toggleTheme: () => void;
   login: (email: string, password: string) => ActionResult;
   register: (name: string, email: string, city: string) => ActionResult;
   logout: () => void;

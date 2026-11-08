@@ -1,0 +1,1 @@
+Une étiquette de statut. Le ton porte le sens : **green** pour un état positif (validée, publiée), **orange** pour un état en attente, **red** pour un état négatif (annulée, retirée) et **neutral** sinon.

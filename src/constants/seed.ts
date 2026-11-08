@@ -1,4 +1,5 @@
 import type { AccessSlot, Db, Listing, Plant, Review, User } from '@/types';
+import { GENERATED_LISTINGS } from './generated-gardens';
 import { SEED_PARCELS } from './parcels';
 
 const slots = (from: string, to: string, days: number[]): AccessSlot[] =>
@@ -230,6 +231,92 @@ const LISTINGS: Listing[] = RAW_LISTINGS.map((listing) => ({
   parcel: SEED_PARCELS[listing.id],
 }));
 
+export type StarterTemplate = Omit<
+  Listing,
+  'id' | 'ownerId' | 'createdAt' | 'status' | 'parcel'
+> & { templateId: string };
+
+const starter = (
+  templateId: string,
+  fields: Omit<StarterTemplate, 'templateId' | 'toolsPrice' | 'photos' | 'waterMeter'> &
+    Partial<Pick<StarterTemplate, 'toolsPrice' | 'waterMeter'>>,
+): StarterTemplate => ({
+  toolsPrice: 0,
+  waterMeter: false,
+  photos: [],
+  ...fields,
+  templateId,
+});
+
+// 3 gardens given to every new account ("mes jardins" out of the box).
+export const STARTER_TEMPLATES: StarterTemplate[] = [
+  starter('tpl-1', {
+    title: 'Mon potager en ville',
+    description:
+      'Petit potager de ville de 90 m², prêt à cultiver : bacs, composteur et outils sur place.',
+    city: 'Melun',
+    mode: 'location',
+    area: 90,
+    price: 100,
+    unit: 'an',
+    toolsProvided: true,
+    toolsPrice: 10,
+    water: 'robinet',
+    waterMeter: true,
+    accessSlots: slots('08:00', '20:00', ALL_DAYS),
+    maxPeople: 3,
+    toilets: false,
+    equipment: 'Composteur, cabanon',
+    produce: ['Salades', 'Tomates', 'Carottes'],
+    address: '10 rue des Jardiniers, 77000 Melun',
+    phone: '06 00 00 00 01',
+    emoji: '🥬',
+    tone: '#e6f4dc',
+  }),
+  starter('tpl-2', {
+    title: 'Mon verger de cerisiers',
+    description:
+      'Cerisiers et pruniers en cueillette libre, panier fourni, ambiance familiale.',
+    city: 'Vaux-le-Pénil',
+    mode: 'cueillette',
+    area: 350,
+    price: 4,
+    unit: 'panier',
+    toolsProvided: false,
+    water: 'cuve',
+    accessSlots: slots('10:00', '17:00', [2, 5, 6]),
+    maxPeople: 6,
+    toilets: true,
+    equipment: 'Échelles, table de pique-nique',
+    produce: ['Cerises', 'Prunes'],
+    address: '4 chemin du Verger, 77000 Vaux-le-Pénil',
+    phone: '06 00 00 00 02',
+    emoji: '🍒',
+    tone: '#fde8e8',
+  }),
+  starter('tpl-3', {
+    title: 'Mon jardin fraises et fleurs',
+    description:
+      'Fraises et fleurs à cueillir en famille, petit coin pique-nique ombragé.',
+    city: 'Dammarie-les-Lys',
+    mode: 'cueillette',
+    area: 200,
+    price: 5,
+    unit: 'panier',
+    toolsProvided: false,
+    water: 'robinet',
+    accessSlots: slots('09:00', '13:00', [5, 6]),
+    maxPeople: 5,
+    toilets: false,
+    equipment: 'Abri',
+    produce: ['Fraises', 'Fleurs'],
+    address: '7 allée des Fraisiers, 77190 Dammarie-les-Lys',
+    phone: '06 00 00 00 03',
+    emoji: '🍓',
+    tone: '#efe3f7',
+  }),
+];
+
 const review = (
   id: string,
   listingId: string,
@@ -299,9 +386,23 @@ const PLANTS: Plant[] = [
   }),
 ];
 
+// Bump when new demo data is added: stored databases then receive the missing seed items.
+export const SEED_VERSION = 4;
+
+// Fake account signed in automatically on the first visit (its gardens, favorites,
+// bookings and messages are generated once by helpers/activity.ts).
+export const DEMO_USER_ID = 'u-demo';
+const DEMO_USER: User = {
+  id: DEMO_USER_ID,
+  name: 'Camille Démo',
+  email: 'demo@demo.fr',
+  city: 'Melun',
+};
+
 export const SEED_DB: Db = {
-  users: USERS,
-  listings: LISTINGS,
+  seedVersion: SEED_VERSION,
+  users: [...USERS, DEMO_USER],
+  listings: [...LISTINGS, ...GENERATED_LISTINGS],
   bookings: [],
   messages: [],
   reviews: REVIEWS,

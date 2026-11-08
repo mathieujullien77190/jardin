@@ -2,10 +2,10 @@ import type { AccessSlot, Listing } from '@/types';
 import { DEFAULT_EMOJI, DEFAULT_SLOT, PRODUCE_OPTIONS, TONES } from '@/constants';
 import type { DraftErrors, ListingDraft } from './types';
 
-export const emptyDraft = (city: string): ListingDraft => ({
+export const emptyDraft = (): ListingDraft => ({
   title: '',
   description: '',
-  city,
+  city: '',
   mode: 'cueillette',
   area: 100,
   price: 5,
@@ -38,11 +38,12 @@ export const validateDraft = (draft: ListingDraft): DraftErrors => {
   const errors: DraftErrors = {};
   if (!draft.title.trim()) errors.title = 'Titre requis.';
   if (!draft.description.trim()) errors.description = 'Décrivez votre jardin.';
-  if (!draft.city) errors.city = 'Choisissez une commune.';
   if (!(draft.area > 0)) errors.area = 'Surface invalide.';
   if (draft.price < 0) errors.price = 'Prix invalide.';
   if (draft.produce.length === 0) errors.produce = 'Choisissez au moins une culture.';
-  if (!draft.address.trim()) errors.address = 'Adresse requise (visible après paiement).';
+  if (!draft.address.trim() || !draft.city) {
+    errors.address = 'Choisissez une adresse dans la liste proposée.';
+  }
   return errors;
 };
 

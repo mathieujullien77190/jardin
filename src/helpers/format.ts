@@ -19,13 +19,9 @@ export const formatDateTime = (iso: string): string =>
     minute: '2-digit',
   });
 
+// First two letters of the name, e.g. "Camille Démo" -> "CA".
 export const initials = (name: string): string =>
-  name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('');
+  name.replace(/\s+/g, '').slice(0, 2).toUpperCase();
 
 export const formatPrice = (listing: Pick<Listing, 'price' | 'unit'>): string =>
   `${formatEuro(listing.price)} / ${listing.unit}`;

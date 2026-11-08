@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@import '../src/theme.css';
+@source '../src';
+@source '../stories';
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

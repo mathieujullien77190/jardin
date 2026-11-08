@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { MODE_LABELS, listingRoute } from '@/constants';
+import { MODE_INFO, listingRoute } from '@/constants';
 import { formatPrice } from '@/helpers/format';
 import Badge from '../ui/Badge';
+import HeartIcon from '../ui/HeartIcon';
 import type { ListingCardProps } from './types';
 
 export const ListingCard = ({
@@ -29,7 +30,7 @@ export const ListingCard = ({
       )}
       <span className="absolute top-3 left-3">
         <Badge tone={listing.mode === 'cueillette' ? 'orange' : 'green'}>
-          {MODE_LABELS[listing.mode]}
+          {MODE_INFO[listing.mode].emoji} {MODE_INFO[listing.mode].title}
         </Badge>
       </span>
       <button
@@ -38,7 +39,7 @@ export const ListingCard = ({
         onClick={() => onToggleFavorite(listing.id)}
         className="bg-surface/90 absolute top-2 right-2 grid h-9 w-9 place-items-center rounded-full text-lg"
       >
-        {favorite ? '❤️' : '🤍'}
+        <HeartIcon filled={favorite} className="h-5 w-5" />
       </button>
       {onShowOnMap && (
         <button

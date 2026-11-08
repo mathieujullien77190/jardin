@@ -1,50 +1,54 @@
 'use client';
 
-import type { GeoJSONSource, Map as MapLibreMap, Marker } from 'maplibre-gl';
+import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import { findCity } from '@/helpers/geo';
-import { loadMapLibre } from '@/helpers/maplibre';
+import { collapseAttribution, loadMapLibre } from '@/helpers/maplibre';
 import {
-  BUBBLE_LABEL_CLASS,
   CADASTRE_MIN_ZOOM,
   CADASTRE_TILES_URL,
   CITY_ZOOM,
+  CLUSTER_COLORS,
+  CLUSTER_FONT,
+  CLUSTER_MAX_ZOOM,
+  CLUSTER_RADIUS,
   FIT_PADDING,
   FRANCE_BOUNDS,
   LAYER_CADASTRE_LINES,
+  LAYER_CLUSTER_COUNT,
+  LAYER_CLUSTERS,
   LAYER_PARCELS_FILL,
   LAYER_PARCELS_LINE,
+  LAYER_POINT,
   MAP_STYLE_URL,
   PARCEL_COLORS,
   PARCEL_ZOOM,
+  POINTS_MAX_ZOOM,
   SOURCE_CADASTRE,
   SOURCE_PARCELS,
+  SOURCE_POINTS,
 } from './constants';
-import { buildBubbles, bubbleClass, parcelsToGeoJson } from './helpers';
+import { parcelsToGeoJson, pointsToGeoJson } from './helpers';
 import type { MapViewProps } from './types';
 
-type MapLibre = Awaited<ReturnType<typeof loadMapLibre>>;
+const MODE_COLOR = [
+  'match',
+  ['get', 'mode'],
+  'cueillette',
+  PARCEL_COLORS.cueillette,
+  PARCEL_COLORS.location,
+];
 
-export const MapView = ({
-  counts,
-  selectedCity,
-  parcels,
-  focus,
-  onSelectCity,
-  onOpenParcel,
-}: MapViewProps) => {
+export const MapView = ({ gardens, selectedCity, focus, onOpenGarden }: MapViewProps) => {
   const container = useRef<HTMLDivElement>(null);
-  const library = useRef<MapLibre | null>(null);
-  const onSelectRef = useRef(onSelectCity);
-  const onOpenRef = useRef(onOpenParcel);
-  const parcelsRef = useRef(parcels);
+  const onOpenRef = useRef(onOpenGarden);
+  const gardensRef = useRef(gardens);
   const [map, setMap] = useState<MapLibreMap | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    onSelectRef.current = onSelectCity;
-    onOpenRef.current = onOpenParcel;
-    parcelsRef.current = parcels;
+    onOpenRef.current = onOpenGarden;
+    gardensRef.current = gardens;
   });
 
   // Create the map once.
@@ -53,7 +57,6 @@ export const MapView = ({
     let instance: MapLibreMap | undefined;
     void loadMapLibre().then((maplibre) => {
       if (cancelled || !container.current) return;
-      library.current = maplibre;
       instance = new maplibre.Map({
         container: container.current,
         style: MAP_STYLE_URL,
@@ -65,7 +68,11 @@ export const MapView = ({
         new maplibre.NavigationControl({ showCompass: false }),
         'top-right',
       );
-      instance.on('load', () => setLoaded(true));
+      instance.on('load', () => {
+        collapseAttribution(instance as MapLibreMap);
+        setLoaded(true);
+      });
+      instance.once('idle', () => collapseAttribution(instance as MapLibreMap));
       setMap(instance);
     });
     return () => {
@@ -76,9 +83,10 @@ export const MapView = ({
     };
   }, []);
 
-  // Cadastre lines + garden polygons (added once the base style is ready).
+  // Sources and layers (added once the base style is ready).
   useEffect(() => {
     if (!map || !loaded) return;
+
     map.addSource(SOURCE_CADASTRE, {
       type: 'vector',
       tiles: [CADASTRE_TILES_URL],
@@ -94,74 +102,115 @@ export const MapView = ({
       minzoom: CADASTRE_MIN_ZOOM,
       paint: { 'line-color': '#7a7a7a', 'line-width': 0.8, 'line-opacity': 0.7 },
     });
+
     map.addSource(SOURCE_PARCELS, {
       type: 'geojson',
-      data: parcelsToGeoJson(parcelsRef.current),
+      data: parcelsToGeoJson(gardensRef.current),
     });
-    const color = [
-      'match',
-      ['get', 'mode'],
-      'cueillette',
-      PARCEL_COLORS.cueillette,
-      PARCEL_COLORS.location,
-    ] as const;
     map.addLayer({
       id: LAYER_PARCELS_FILL,
       type: 'fill',
       source: SOURCE_PARCELS,
-      paint: { 'fill-color': color as never, 'fill-opacity': 0.5 },
+      paint: { 'fill-color': MODE_COLOR as never, 'fill-opacity': 0.5 },
     });
     map.addLayer({
       id: LAYER_PARCELS_LINE,
       type: 'line',
       source: SOURCE_PARCELS,
-      paint: { 'line-color': color as never, 'line-width': 2.5 },
+      paint: { 'line-color': MODE_COLOR as never, 'line-width': 2.5 },
     });
-    map.on('click', LAYER_PARCELS_FILL, (event) => {
+
+    // Clustered points: one per garden, merged into numbered clusters when zoomed out.
+    map.addSource(SOURCE_POINTS, {
+      type: 'geojson',
+      data: pointsToGeoJson(gardensRef.current),
+      cluster: true,
+      clusterRadius: CLUSTER_RADIUS,
+      clusterMaxZoom: CLUSTER_MAX_ZOOM,
+    });
+    map.addLayer({
+      id: LAYER_CLUSTERS,
+      type: 'circle',
+      source: SOURCE_POINTS,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          CLUSTER_COLORS.small,
+          10,
+          CLUSTER_COLORS.medium,
+          30,
+          CLUSTER_COLORS.large,
+        ],
+        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 21, 30, 27],
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#ffffff',
+        'circle-opacity': 0.92,
+      },
+    });
+    map.addLayer({
+      id: LAYER_CLUSTER_COUNT,
+      type: 'symbol',
+      source: SOURCE_POINTS,
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-font': CLUSTER_FONT,
+        'text-size': 13,
+        'text-allow-overlap': true,
+      },
+      paint: { 'text-color': '#ffffff' },
+    });
+    map.addLayer({
+      id: LAYER_POINT,
+      type: 'circle',
+      source: SOURCE_POINTS,
+      maxzoom: POINTS_MAX_ZOOM,
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': MODE_COLOR as never,
+        'circle-radius': 8,
+        'circle-stroke-width': 2.5,
+        'circle-stroke-color': '#ffffff',
+      },
+    });
+
+    // Click a cluster to zoom into it, a garden to open its page.
+    map.on('click', LAYER_CLUSTERS, async (event) => {
+      const feature = event.features?.[0];
+      if (!feature || feature.geometry.type !== 'Point') return;
+      const clusterId = feature.properties?.cluster_id as number;
+      const source = map.getSource<GeoJSONSource>(SOURCE_POINTS);
+      const zoom = await source?.getClusterExpansionZoom(clusterId);
+      if (zoom === undefined) return;
+      map.easeTo({
+        center: feature.geometry.coordinates as [number, number],
+        zoom: zoom + 0.5,
+      });
+    });
+    const open = (event: { features?: { properties?: Record<string, unknown> }[] }) => {
       const id = event.features?.[0]?.properties?.id;
       if (typeof id === 'string') onOpenRef.current(id);
-    });
-    map.on('mouseenter', LAYER_PARCELS_FILL, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', LAYER_PARCELS_FILL, () => {
-      map.getCanvas().style.cursor = '';
+    };
+    map.on('click', LAYER_POINT, open);
+    map.on('click', LAYER_PARCELS_FILL, open);
+    [LAYER_CLUSTERS, LAYER_POINT, LAYER_PARCELS_FILL].forEach((layer) => {
+      map.on('mouseenter', layer, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', layer, () => {
+        map.getCanvas().style.cursor = '';
+      });
     });
   }, [map, loaded]);
 
-  // Keep the polygons in sync with the filtered listings.
+  // Keep the data in sync with the filtered listings.
   useEffect(() => {
     if (!map || !loaded) return;
-    const source = map.getSource<GeoJSONSource>(SOURCE_PARCELS);
-    source?.setData(parcelsToGeoJson(parcels));
-  }, [map, loaded, parcels]);
-
-  // One bubble marker per commune that has listings.
-  useEffect(() => {
-    const maplibre = library.current;
-    if (!map || !maplibre) return;
-    const markers: Marker[] = buildBubbles(counts).map((bubble) => {
-      const selected = bubble.name === selectedCity;
-      const element = document.createElement('button');
-      element.type = 'button';
-      element.title = `${bubble.name} · ${bubble.count} jardin(s)`;
-      element.className = bubbleClass(selected);
-      element.style.width = `${bubble.size}px`;
-      element.style.height = `${bubble.size}px`;
-      element.textContent = String(bubble.count);
-      const label = document.createElement('span');
-      label.className = BUBBLE_LABEL_CLASS;
-      label.textContent = bubble.name;
-      element.append(label);
-      element.addEventListener('click', () =>
-        onSelectRef.current(selected ? '' : bubble.name),
-      );
-      return new maplibre.Marker({ element })
-        .setLngLat([bubble.lng, bubble.lat])
-        .addTo(map);
-    });
-    return () => markers.forEach((marker) => marker.remove());
-  }, [map, counts, selectedCity]);
+    map.getSource<GeoJSONSource>(SOURCE_POINTS)?.setData(pointsToGeoJson(gardens));
+    map.getSource<GeoJSONSource>(SOURCE_PARCELS)?.setData(parcelsToGeoJson(gardens));
+  }, [map, loaded, gardens]);
 
   // Zoom on the selected commune, back to France otherwise.
   useEffect(() => {
@@ -171,17 +220,17 @@ export const MapView = ({
     else map.fitBounds(FRANCE_BOUNDS, { padding: FIT_PADDING });
   }, [map, selectedCity]);
 
-  // Zoom on one garden parcel on demand.
+  // Zoom on one garden on demand.
   useEffect(() => {
     if (!map || !focus) return;
-    const parcel = parcelsRef.current.find((candidate) => candidate.id === focus.id);
-    if (parcel) map.flyTo({ center: parcel.center, zoom: PARCEL_ZOOM });
+    const garden = gardensRef.current.find((candidate) => candidate.id === focus.id);
+    if (garden) map.flyTo({ center: garden.center, zoom: PARCEL_ZOOM });
   }, [map, focus]);
 
   return (
     <div
       ref={container}
-      className="border-line aspect-square w-full overflow-hidden rounded-2xl border"
+      className="border-line aspect-[4/3] w-full overflow-hidden rounded-2xl border sm:aspect-[16/9] lg:aspect-square"
       role="region"
       aria-label="Carte des jardins"
     />

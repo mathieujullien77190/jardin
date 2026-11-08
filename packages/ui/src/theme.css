@@ -1,0 +1,15 @@
+/* Design tokens shared by the app and Storybook (Tailwind v4 theme). */
+@theme {
+  --color-brand: #2f7d4f;
+  --color-brand-dark: #1f5636;
+  --color-brand-soft: #e8f3ea;
+  --color-cream: #fafaf7;
+  --color-surface: #ffffff;
+  --color-ink: #1d2a22;
+  --color-mute: #6b7a70;
+  --color-line: #e6e8e2;
+  --color-accent: #f2994a;
+  --color-danger: #c0392b;
+  --color-heart: #e5484d;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}

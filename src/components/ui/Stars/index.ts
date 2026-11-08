@@ -1,1 +1,1 @@
-export { default } from './Stars';
+export { Stars as default } from '@adopte-un-jardin/ui';

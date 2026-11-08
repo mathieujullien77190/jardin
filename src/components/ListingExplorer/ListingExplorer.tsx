@@ -2,18 +2,36 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { CITIES, RADIUS_OPTIONS, SORT_OPTIONS, listingRoute } from '@/constants';
+import {
+  CITIES,
+  MODE_INFO,
+  RADIUS_OPTIONS,
+  SORT_OPTIONS,
+  listingRoute,
+} from '@/constants';
 import type { SortId } from '@/constants';
-import { cityDistance } from '@/helpers/geo';
-import { countByCity, filterListings, ratingOf } from '@/helpers/listings';
+import { distanceToListing, listingPoint } from '@/helpers/geo';
+import { filterListings, ratingOf } from '@/helpers/listings';
 import type { ListingFilters } from '@/helpers/listings';
 import { useApp } from '@/hooks/useApp';
 import ListingCard from '../ListingCard';
 import MapView from '../MapView';
-import type { MapFocus, MapParcel } from '../MapView/types';
+import type { MapFocus, MapGarden } from '../MapView/types';
+import Button from '../ui/Button';
 import Chip from '../ui/Chip';
 import EmptyState from '../ui/EmptyState';
-import { DEFAULT_FILTERS, MODE_CHIPS } from './constants';
+import {
+  ALL_MODES_INFO,
+  DEFAULT_FILTERS,
+  EQUIPMENT_FILTERS,
+  PAGE_SIZE,
+} from './constants';
+
+const MODE_OPTIONS = [
+  { id: 'all', ...ALL_MODES_INFO },
+  { id: 'cueillette', ...MODE_INFO.cueillette },
+  { id: 'location', ...MODE_INFO.location },
+] as const;
 
 const inputClass = 'w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm';
 
@@ -22,32 +40,33 @@ export const ListingExplorer = () => {
   const router = useRouter();
   const [filters, setFilters] = useState<ListingFilters>(DEFAULT_FILTERS);
   const [focus, setFocus] = useState<MapFocus | null>(null);
-  const patch = (change: Partial<ListingFilters>): void =>
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const patch = (change: Partial<ListingFilters>): void => {
     setFilters((current) => ({ ...current, ...change }));
+    setVisible(PAGE_SIZE);
+  };
 
   const results = useMemo(
     () => filterListings(db.listings, db.reviews, filters),
     [db.listings, db.reviews, filters],
   );
-  const mapCounts = useMemo(
-    () => countByCity(filterListings(db.listings, db.reviews, { ...filters, city: '' })),
-    [db.listings, db.reviews, filters],
-  );
-  const mapParcels = useMemo<MapParcel[]>(
+  // Every result is a map point (cadastral parcel centre, else its commune).
+  const mapGardens = useMemo<MapGarden[]>(
     () =>
-      results.flatMap((listing) =>
-        listing.parcel
+      results.flatMap((listing) => {
+        const center = listingPoint(listing);
+        return center
           ? [
               {
                 id: listing.id,
                 title: listing.title,
                 mode: listing.mode,
-                center: listing.parcel.center,
-                ring: listing.parcel.ring,
+                center,
+                ring: listing.parcel?.ring,
               },
             ]
-          : [],
-      ),
+          : [];
+      }),
     [results],
   );
   const favorites = user ? (db.favorites[user.id] ?? []) : [];
@@ -101,31 +120,49 @@ export const ListingExplorer = () => {
         />
       </div>
 
+      <div className="mt-5">
+        <p className="text-mute mb-2 text-xs font-bold tracking-wide uppercase">
+          Type d’annonce
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {MODE_OPTIONS.map((option) => {
+            const active = filters.mode === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => patch({ mode: option.id })}
+                className={`rounded-2xl border-2 p-3 text-left transition ${
+                  active
+                    ? 'border-brand bg-brand-soft'
+                    : 'border-line bg-surface hover:border-brand'
+                }`}
+              >
+                <span className="font-bold">
+                  {option.emoji} {option.title}
+                </span>
+                <span className="text-mute mt-0.5 block text-xs leading-snug">
+                  {option.description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {MODE_CHIPS.map((chip) => (
+        <span className="text-mute mr-1 text-xs font-bold tracking-wide uppercase">
+          Équipements
+        </span>
+        {EQUIPMENT_FILTERS.map((filter) => (
           <Chip
-            key={chip.id}
-            label={chip.label}
-            active={filters.mode === chip.id}
-            onClick={() => patch({ mode: chip.id })}
+            key={filter.key}
+            label={filter.label}
+            active={filters[filter.key]}
+            onClick={() => patch({ [filter.key]: !filters[filter.key] })}
           />
         ))}
-        <span className="bg-line mx-1 hidden h-5 w-px sm:block" />
-        <Chip
-          label="🧰 Outils"
-          active={filters.tools}
-          onClick={() => patch({ tools: !filters.tools })}
-        />
-        <Chip
-          label="💧 Eau"
-          active={filters.water}
-          onClick={() => patch({ water: !filters.water })}
-        />
-        <Chip
-          label="🚻 Toilettes"
-          active={filters.toilets}
-          onClick={() => patch({ toilets: !filters.toilets })}
-        />
         {user?.city && filters.city !== user.city && (
           <Chip
             label={`📍 Près de moi (${user.city})`}
@@ -160,39 +197,41 @@ export const ListingExplorer = () => {
             />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-2">
-              {results.map((listing) => (
+              {results.slice(0, visible).map((listing) => (
                 <ListingCard
                   key={listing.id}
                   listing={listing}
                   rating={ratingOf(db.reviews, listing.id)}
                   favorite={favorites.includes(listing.id)}
                   distance={
-                    filters.city ? cityDistance(filters.city, listing.city) : null
+                    filters.city ? distanceToListing(filters.city, listing) : null
                   }
                   onToggleFavorite={toggleFavorite}
-                  onShowOnMap={
-                    listing.parcel
-                      ? (id) =>
-                          setFocus((current) => ({ id, seq: (current?.seq ?? 0) + 1 }))
-                      : undefined
+                  onShowOnMap={(id) =>
+                    setFocus((current) => ({ id, seq: (current?.seq ?? 0) + 1 }))
                   }
                 />
               ))}
             </div>
           )}
+          {results.length > visible && (
+            <div className="mt-6 flex justify-center">
+              <Button variant="ghost" onClick={() => setVisible((n) => n + PAGE_SIZE)}>
+                Voir plus de jardins ({results.length - visible})
+              </Button>
+            </div>
+          )}
         </div>
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside className="order-first lg:sticky lg:top-24 lg:order-none lg:self-start">
           <MapView
-            counts={mapCounts}
+            gardens={mapGardens}
             selectedCity={filters.city}
-            parcels={mapParcels}
             focus={focus}
-            onSelectCity={(city) => patch({ city })}
-            onOpenParcel={(id) => router.push(listingRoute(id))}
+            onOpenGarden={(id) => router.push(listingRoute(id))}
           />
           <p className="text-mute mt-2 text-xs">
-            Bulle : filtrer par commune. 📍 sur une annonce : zoom sur sa parcelle
-            cadastrale (cliquable).
+            Cercles : jardins regroupés (clic pour zoomer). 📍 sur une annonce : zoom sur
+            sa parcelle cadastrale.
           </p>
         </aside>
       </div>

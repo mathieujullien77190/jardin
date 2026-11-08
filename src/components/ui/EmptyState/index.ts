@@ -1,1 +1,1 @@
-export { default } from './EmptyState';
+export { EmptyState as default } from '@adopte-un-jardin/ui';

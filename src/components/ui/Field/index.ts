@@ -1,1 +1,1 @@
-export { default } from './Field';
+export { Field as default } from '@adopte-un-jardin/ui';

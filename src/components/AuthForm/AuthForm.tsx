@@ -76,7 +76,7 @@ export const AuthForm = () => {
         {tab === 'login' ? (
           <Field
             label="Mot de passe"
-            hint="Connexion fictive : n’importe quel mot de passe fonctionne."
+            hint="Connexion fictive : e-mail et mot de passe au choix, le compte est créé automatiquement."
           >
             <input
               type="password"

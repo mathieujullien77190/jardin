@@ -1,1 +1,1 @@
-export { default } from './Badge';
+export { Badge as default } from '@adopte-un-jardin/ui';

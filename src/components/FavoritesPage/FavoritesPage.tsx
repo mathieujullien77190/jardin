@@ -6,6 +6,7 @@ import { useApp } from '@/hooks/useApp';
 import ListingCard from '../ListingCard';
 import RequireAuth from '../RequireAuth';
 import Button from '../ui/Button';
+import HeartIcon from '../ui/HeartIcon';
 import EmptyState from '../ui/EmptyState';
 
 const Content = () => {
@@ -19,7 +20,7 @@ const Content = () => {
       <h1 className="text-2xl font-extrabold">Mes favoris</h1>
       {favorites.length === 0 ? (
         <EmptyState
-          emoji="🤍"
+          emoji={<HeartIcon className="h-12 w-12" />}
           title="Aucun favori"
           text="Touchez le cœur d’une annonce pour la retrouver ici."
           action={<Button href={ROUTES.home}>Explorer</Button>}

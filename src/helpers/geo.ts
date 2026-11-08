@@ -1,4 +1,4 @@
-import type { City } from '@/types';
+import type { City, Listing } from '@/types';
 import { CITIES } from '@/constants';
 
 const EARTH_RADIUS_KM = 6371;
@@ -17,8 +17,22 @@ export const distanceKm = (from: City, to: City): number => {
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
 };
 
-export const cityDistance = (a: string, b: string): number | null => {
-  const from = findCity(a);
-  const to = findCity(b);
-  return from && to ? distanceKm(from, to) : null;
+// Best known point of a garden: cadastral parcel, else picked address, else its commune.
+export const listingPoint = (
+  listing: Pick<Listing, 'parcel' | 'location' | 'city'>,
+): [number, number] | null => {
+  if (listing.parcel) return listing.parcel.center;
+  if (listing.location) return listing.location;
+  const city = findCity(listing.city);
+  return city ? [city.lng, city.lat] : null;
+};
+
+export const distanceToListing = (
+  cityName: string,
+  listing: Pick<Listing, 'parcel' | 'location' | 'city'>,
+): number | null => {
+  const from = findCity(cityName);
+  const point = listingPoint(listing);
+  if (!from || !point) return null;
+  return distanceKm(from, { name: '', lng: point[0], lat: point[1] });
 };

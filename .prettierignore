@@ -6,3 +6,5 @@ next-env.d.ts
 AGENTS.md
 maquettes
 public/maplibre
+
+storybook-static

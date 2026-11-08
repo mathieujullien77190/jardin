@@ -1,37 +1,8 @@
 import Link from 'next/link';
-import type { ButtonProps, ButtonVariant } from './types';
+import { Button as BaseButton } from '@adopte-un-jardin/ui';
+import type { ButtonProps } from '@adopte-un-jardin/ui';
 
-const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand text-white hover:bg-brand-dark',
-  accent: 'bg-accent text-ink hover:opacity-90',
-  ghost: 'border border-line bg-surface text-ink hover:bg-brand-soft',
-  danger: 'border border-danger bg-surface text-danger hover:bg-danger hover:text-white',
-};
-
-const Button = ({
-  variant = 'primary',
-  href,
-  small = false,
-  className = '',
-  children,
-  type = 'button',
-  ...rest
-}: ButtonProps) => {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-full font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
-    small ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
-  } ${VARIANTS[variant]} ${className}`;
-  if (href) {
-    return (
-      <Link href={href} className={classes}>
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <button type={type} className={classes} {...rest}>
-      {children}
-    </button>
-  );
-};
+// App button: same primitive, with client-side navigation for links.
+const Button = (props: ButtonProps) => <BaseButton linkAs={Link} {...props} />;
 
 export default Button;

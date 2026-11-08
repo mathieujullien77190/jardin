@@ -1,6 +1,6 @@
 import type { Listing, ListingMode, Review } from '@/types';
 import type { SortId } from '@/constants';
-import { cityDistance } from './geo';
+import { distanceToListing } from './geo';
 
 export type ListingFilters = {
   query: string;
@@ -37,7 +37,7 @@ export const filterListings = (
     if (filters.water && listing.water === 'aucune') return false;
     if (filters.toilets && !listing.toilets) return false;
     if (filters.city) {
-      const distance = cityDistance(filters.city, listing.city);
+      const distance = distanceToListing(filters.city, listing);
       if (distance === null || distance > filters.radius) return false;
     }
     if (!query) return true;
@@ -53,7 +53,7 @@ export const filterListings = (
   });
 
   const distanceOf = (listing: Listing): number =>
-    filters.city ? (cityDistance(filters.city, listing.city) ?? Infinity) : 0;
+    filters.city ? (distanceToListing(filters.city, listing) ?? Infinity) : 0;
 
   return [...filtered].sort((a, b) => {
     switch (filters.sort) {
@@ -70,9 +70,3 @@ export const filterListings = (
     }
   });
 };
-
-export const countByCity = (listings: Listing[]): Record<string, number> =>
-  listings.reduce<Record<string, number>>((acc, listing) => {
-    acc[listing.city] = (acc[listing.city] ?? 0) + 1;
-    return acc;
-  }, {});

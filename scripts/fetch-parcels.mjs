@@ -1,8 +1,9 @@
-// Picks a random real cadastral parcel near each demo garden (IGN API Carto)
+// Picks a random real cadastral parcel near each hand-made demo garden (IGN API Carto)
 // and writes src/constants/parcels.ts. Run: npm run parcels
 import { writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pickParcel } from './lib/cadastre.mjs';
 
 const GARDENS = [
   ['l-fraises', 'Montreuil', 48.8638, 2.4485],
@@ -13,84 +14,26 @@ const GARDENS = [
   ['l-fleuri', 'Bordeaux', 44.8378, -0.5792],
   ['l-courges', 'Tours', 47.3941, 0.6848],
   ['l-verger', 'Annecy', 45.8992, 6.1294],
+  // Starter gardens given to every new account (see STARTER_TEMPLATES).
+  ['tpl-1', 'Melun', 48.5395, 2.6606],
+  ['tpl-2', 'Vaux-le-Pénil', 48.5282, 2.6872],
+  ['tpl-3', 'Dammarie-les-Lys', 48.5127, 2.6414],
 ];
 
-const API = 'https://apicarto.ign.fr/api/cadastre/parcelle';
-const MIN_AREA = 150;
-const MAX_AREA = 2500;
-const MAX_POINTS = 80;
-const MAX_ATTEMPTS = 60;
-
-const hash = (text) =>
-  [...text].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7);
-
-const mulberry32 = (seed) => () => {
-  seed |= 0;
-  seed = (seed + 0x6d2b79f5) | 0;
-  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-
-const round6 = (n) => Math.round(n * 1e6) / 1e6;
-
-const ringArea = (ring) =>
-  Math.abs(
-    ring.reduce((sum, [x1, y1], i) => {
-      const [x2, y2] = ring[(i + 1) % ring.length];
-      return sum + (x1 * y2 - x2 * y1);
-    }, 0),
-  ) / 2;
-
-const outerRing = (geometry) => {
-  const polygons =
-    geometry.type === 'MultiPolygon' ? geometry.coordinates : [geometry.coordinates];
-  return polygons
-    .map((polygon) => polygon[0])
-    .sort((a, b) => ringArea(b) - ringArea(a))[0];
-};
-
-const fetchParcel = async (lng, lat) => {
-  const geom = JSON.stringify({ type: 'Point', coordinates: [lng, lat] });
-  const response = await fetch(`${API}?geom=${encodeURIComponent(geom)}`);
-  if (!response.ok) return null;
-  const data = await response.json();
-  return data.features?.[0] ?? null;
-};
-
-const pickParcel = async ([id, city, lat, lng]) => {
-  const random = mulberry32(hash(id));
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    const pointLng = lng + (random() - 0.5) * 0.07;
-    const pointLat = lat + (random() - 0.5) * 0.05;
-    const feature = await fetchParcel(pointLng, pointLat);
-    if (!feature) continue;
-    const { contenance, section, numero, nom_com: commune } = feature.properties;
-    const ring = outerRing(feature.geometry).map(([x, y]) => [round6(x), round6(y)]);
-    if (contenance < MIN_AREA || contenance > MAX_AREA || ring.length > MAX_POINTS)
-      continue;
-    const xs = ring.map(([x]) => x);
-    const ys = ring.map(([, y]) => y);
-    const center = [
-      round6((Math.min(...xs) + Math.max(...xs)) / 2),
-      round6((Math.min(...ys) + Math.max(...ys)) / 2),
-    ];
-    return {
-      ref: `${section} ${Number(numero)}`,
-      commune: commune ?? city,
-      area: contenance,
-      center,
-      ring,
-    };
-  }
-  throw new Error(`No suitable parcel found for ${id}`);
-};
-
 const parcels = {};
-for (const garden of GARDENS) {
-  parcels[garden[0]] = await pickParcel(garden);
-  const p = parcels[garden[0]];
-  console.log(`${garden[0]}: ${p.commune} ${p.ref} (${p.area} m², ${p.ring.length} pts)`);
+for (const [id, city, lat, lng] of GARDENS) {
+  const parcel = await pickParcel(
+    id,
+    city,
+    lat,
+    lng,
+    id.startsWith('tpl-') ? { spreadLng: 0.02, spreadLat: 0.014 } : {},
+  );
+  if (!parcel) throw new Error(`No suitable parcel found for ${id}`);
+  parcels[id] = parcel;
+  console.log(
+    `${id}: ${parcel.commune} ${parcel.ref} (${parcel.area} m², ${parcel.ring.length} pts)`,
+  );
 }
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
