@@ -10,6 +10,7 @@ export const ListingCard = ({
   favorite,
   distance,
   onToggleFavorite,
+  onShowOnMap,
 }: ListingCardProps) => (
   <article className="border-line bg-surface overflow-hidden rounded-2xl border transition hover:shadow-md">
     <div
@@ -39,6 +40,15 @@ export const ListingCard = ({
       >
         {favorite ? '❤️' : '🤍'}
       </button>
+      {onShowOnMap && (
+        <button
+          type="button"
+          onClick={() => onShowOnMap(listing.id)}
+          className="bg-surface/90 absolute right-2 bottom-2 rounded-full px-3 py-1 text-xs font-semibold"
+        >
+          📍 Voir la parcelle
+        </button>
+      )}
     </div>
     <Link href={listingRoute(listing.id)} className="block p-4">
       <h3 className="font-bold">{listing.title}</h3>

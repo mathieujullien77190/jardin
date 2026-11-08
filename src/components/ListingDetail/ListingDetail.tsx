@@ -13,6 +13,7 @@ import { useApp } from '@/hooks/useApp';
 import { useQueryId } from '@/hooks/useQueryId';
 import BookingForm from '../BookingForm';
 import ContactBox from '../ContactBox';
+import ParcelMap from '../ParcelMap';
 import ReviewSection from '../ReviewSection';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
@@ -143,6 +144,17 @@ export const ListingDetail = () => {
             <p className="text-sm">{summarizeAccess(listing.accessSlots)}</p>
           </div>
         </section>
+
+        {listing.parcel && (
+          <section className="space-y-2">
+            <h2 className="text-xl font-bold">Parcelle cadastrale</h2>
+            <ParcelMap parcel={listing.parcel} />
+            <p className="text-mute text-sm">
+              {listing.parcel.commune} · section {listing.parcel.ref} ·{' '}
+              {listing.parcel.area} m² (cadastre, parcelle tirée au hasard pour la démo)
+            </p>
+          </section>
+        )}
 
         <section className="border-line bg-surface rounded-2xl border border-dashed p-4">
           <h2 className="font-bold">Adresse et contact</h2>

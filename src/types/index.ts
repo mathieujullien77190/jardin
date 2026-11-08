@@ -14,6 +14,15 @@ export type User = { id: string; name: string; email: string; city: string };
 
 export type AccessSlot = { day: number; from: string; to: string };
 
+// Real cadastral parcel (IGN API Carto): outer ring in [lng, lat].
+export type Parcel = {
+  ref: string;
+  commune: string;
+  area: number;
+  center: [number, number];
+  ring: [number, number][];
+};
+
 export type Listing = {
   id: string;
   ownerId: string;
@@ -36,6 +45,7 @@ export type Listing = {
   photos: string[];
   address: string;
   phone: string;
+  parcel?: Parcel;
   status: ListingStatus;
   emoji: string;
   tone: string;

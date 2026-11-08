@@ -18,7 +18,13 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     },
   },
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
+  globalIgnores([
+    'public/maplibre/**',
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+  ]),
 ]);
 
 export default eslintConfig;

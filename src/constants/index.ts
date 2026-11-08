@@ -12,8 +12,8 @@ import type {
 export * from './seed';
 
 export const STORAGE_KEYS = {
-  db: 'auj:db:v2',
-  session: 'auj:session:v2',
+  db: 'auj:db:v3',
+  session: 'auj:session:v3',
   theme: 'auj:theme:v1',
 } as const;
 
@@ -56,7 +56,6 @@ export const CITIES: City[] = [
 
 export const RADIUS_OPTIONS: number[] = [5, 10, 20, 50, 100, 300];
 export const DEFAULT_RADIUS = 20;
-export const MAP_BOUNDS = { minLat: 42.5, maxLat: 51.5, minLng: -3, maxLng: 9 } as const;
 
 export const SERVICE_FEE_RATE = 0.08;
 export const MIN_SERVICE_FEE = 1;

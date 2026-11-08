@@ -7,4 +7,5 @@ export type ListingCardProps = {
   favorite: boolean;
   distance?: number | null;
   onToggleFavorite: (listingId: string) => void;
+  onShowOnMap?: (listingId: string) => void;
 };

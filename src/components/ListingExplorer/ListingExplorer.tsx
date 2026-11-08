@@ -1,7 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { CITIES, RADIUS_OPTIONS, SORT_OPTIONS } from '@/constants';
+import { CITIES, RADIUS_OPTIONS, SORT_OPTIONS, listingRoute } from '@/constants';
 import type { SortId } from '@/constants';
 import { cityDistance } from '@/helpers/geo';
 import { countByCity, filterListings, ratingOf } from '@/helpers/listings';
@@ -9,6 +10,7 @@ import type { ListingFilters } from '@/helpers/listings';
 import { useApp } from '@/hooks/useApp';
 import ListingCard from '../ListingCard';
 import MapView from '../MapView';
+import type { MapFocus, MapParcel } from '../MapView/types';
 import Chip from '../ui/Chip';
 import EmptyState from '../ui/EmptyState';
 import { DEFAULT_FILTERS, MODE_CHIPS } from './constants';
@@ -17,7 +19,9 @@ const inputClass = 'w-full rounded-xl border border-line bg-surface px-3 py-2 te
 
 export const ListingExplorer = () => {
   const { db, user, ready, toggleFavorite } = useApp();
+  const router = useRouter();
   const [filters, setFilters] = useState<ListingFilters>(DEFAULT_FILTERS);
+  const [focus, setFocus] = useState<MapFocus | null>(null);
   const patch = (change: Partial<ListingFilters>): void =>
     setFilters((current) => ({ ...current, ...change }));
 
@@ -28,6 +32,23 @@ export const ListingExplorer = () => {
   const mapCounts = useMemo(
     () => countByCity(filterListings(db.listings, db.reviews, { ...filters, city: '' })),
     [db.listings, db.reviews, filters],
+  );
+  const mapParcels = useMemo<MapParcel[]>(
+    () =>
+      results.flatMap((listing) =>
+        listing.parcel
+          ? [
+              {
+                id: listing.id,
+                title: listing.title,
+                mode: listing.mode,
+                center: listing.parcel.center,
+                ring: listing.parcel.ring,
+              },
+            ]
+          : [],
+      ),
+    [results],
   );
   const favorites = user ? (db.favorites[user.id] ?? []) : [];
 
@@ -149,6 +170,12 @@ export const ListingExplorer = () => {
                     filters.city ? cityDistance(filters.city, listing.city) : null
                   }
                   onToggleFavorite={toggleFavorite}
+                  onShowOnMap={
+                    listing.parcel
+                      ? (id) =>
+                          setFocus((current) => ({ id, seq: (current?.seq ?? 0) + 1 }))
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -158,10 +185,14 @@ export const ListingExplorer = () => {
           <MapView
             counts={mapCounts}
             selectedCity={filters.city}
+            parcels={mapParcels}
+            focus={focus}
             onSelectCity={(city) => patch({ city })}
+            onOpenParcel={(id) => router.push(listingRoute(id))}
           />
           <p className="text-mute mt-2 text-xs">
-            Cliquez sur une bulle pour filtrer par commune.
+            Bulle : filtrer par commune. 📍 sur une annonce : zoom sur sa parcelle
+            cadastrale (cliquable).
           </p>
         </aside>
       </div>

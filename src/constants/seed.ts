@@ -1,4 +1,5 @@
 import type { AccessSlot, Db, Listing, Plant, Review, User } from '@/types';
+import { SEED_PARCELS } from './parcels';
 
 const slots = (from: string, to: string, days: number[]): AccessSlot[] =>
   days.map((day) => ({ day, from, to }));
@@ -32,7 +33,7 @@ const base: Pick<
   createdAt: NOW,
 };
 
-const LISTINGS: Listing[] = [
+const RAW_LISTINGS: Listing[] = [
   {
     ...base,
     id: 'l-fraises',
@@ -223,6 +224,11 @@ const LISTINGS: Listing[] = [
     tone: '#fde8e8',
   },
 ];
+
+const LISTINGS: Listing[] = RAW_LISTINGS.map((listing) => ({
+  ...listing,
+  parcel: SEED_PARCELS[listing.id],
+}));
 
 const review = (
   id: string,

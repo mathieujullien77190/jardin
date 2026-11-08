@@ -1,5 +1,5 @@
 import type { City } from '@/types';
-import { CITIES, MAP_BOUNDS } from '@/constants';
+import { CITIES } from '@/constants';
 
 const EARTH_RADIUS_KM = 6371;
 
@@ -22,8 +22,3 @@ export const cityDistance = (a: string, b: string): number | null => {
   const to = findCity(b);
   return from && to ? distanceKm(from, to) : null;
 };
-
-export const projectToMap = (city: City): { x: number; y: number } => ({
-  x: ((city.lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * 100,
-  y: (1 - (city.lat - MAP_BOUNDS.minLat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * 100,
-});
